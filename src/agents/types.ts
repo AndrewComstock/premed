@@ -19,7 +19,7 @@ export interface AgentDefinition {
   provider: AgentProvider;
   placements: AgentPlacement[];
   enabled: boolean;
-  /** Provider-specific settings (agent ID, alias, bot URL, API endpoint...). */
+  /** Optional provider-specific settings. Bedrock agent IDs live server-side in the agent API. */
   config?: Record<string, string>;
 }
 

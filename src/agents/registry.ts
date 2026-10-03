@@ -1,7 +1,7 @@
 import type { AgentDefinition, AgentPlacement } from "./types";
 
-// Register agents here. Every entry starts disabled; flip `enabled` and fill in
-// `config` once the agent exists. See docs/AGENTS.md for the walkthrough.
+// Register agents here. Every entry starts disabled; flip `enabled` once the agent
+// exists and is reachable through the agent API. See docs/AGENTS.md and docs/DEPLOY.md.
 export const agents: AgentDefinition[] = [
   {
     id: "halcyra-assistant",
@@ -10,8 +10,7 @@ export const agents: AgentDefinition[] = [
     provider: "bedrock",
     placements: ["global-assistant"],
     enabled: false,
-    config: { agentId: "", agentAliasId: "", endpoint: "" },
-  },
+      },
   {
     id: "product-finder",
     name: "Product Finder",
@@ -27,7 +26,6 @@ export const agents: AgentDefinition[] = [
     provider: "copilot-studio",
     placements: ["quote-request", "sector-advisor"],
     enabled: false,
-    config: { directLineTokenEndpoint: "" },
   },
   {
     id: "service-agent",
@@ -48,4 +46,7 @@ export function agentsPlannedFor(placement: AgentPlacement): AgentDefinition[] {
 }
 
 /** Show dashed "agent goes here" markers. Set NEXT_PUBLIC_SHOW_AGENT_SLOTS=false to hide. */
+/** Base URL of the agent API (infra/agent-api), e.g. https://abc123.execute-api.us-east-1.amazonaws.com */
+export const agentApiUrl = (process.env.NEXT_PUBLIC_AGENT_API_URL || "").replace(/\/$/, "");
+
 export const showAgentSlots = process.env.NEXT_PUBLIC_SHOW_AGENT_SLOTS !== "false";

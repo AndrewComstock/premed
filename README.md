@@ -26,5 +26,10 @@ npm run dev        # http://localhost:3000
 npm run build      # static site in ./out
 ```
 
-`./out` can be hosted on S3 + CloudFront, Azure Static Web Apps, GitHub Pages or any static host.
-For a sub-path (e.g. GitHub Pages project sites) build with `NEXT_PUBLIC_BASE_PATH=/repo-name`.
+## Deploy
+
+The site is hosted on AWS Amplify (`amplify.yml`), with an agent API for Bedrock and Copilot Studio
+in `infra/agent-api`. Step-by-step instructions: [docs/DEPLOY.md](docs/DEPLOY.md).
+
+`./out` also works on any static host (S3 + CloudFront, Azure Static Web Apps, GitHub Pages).
+For a sub-path build with `NEXT_PUBLIC_BASE_PATH=/repo-name`.

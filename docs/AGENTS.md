@@ -35,16 +35,17 @@ Every slot renders an element with `data-agent-slot="<placement>"`, plus the pag
 
 ### AWS Bedrock Agents
 
-The site is a static export, so the browser cannot hold AWS credentials. Put a thin backend in front:
-API Gateway + Lambda calling `bedrock-agent-runtime` `InvokeAgent` with your `agentId` and
-`agentAliasId`. Set the endpoint URL in the registry's `config.endpoint`. The product catalog in
+The site is a static export, so the browser cannot hold AWS credentials. It calls the agent API in
+`infra/agent-api` (API Gateway + Lambda), whose `POST /chat` route invokes the Bedrock agent mapped
+to the site agent id. The Bedrock adapter in `src/agents/providers/index.ts` already speaks to it;
+set `NEXT_PUBLIC_AGENT_API_URL` and map the agent (see [DEPLOY.md](DEPLOY.md)). The product catalog in
 `src/lib/products.ts` is a good knowledge-base source (export it to JSON/S3).
 
 ### Microsoft Copilot Studio
 
-Publish the agent to a custom website channel. Either embed its iframe in the slot, or expose a
-Direct Line token endpoint (Azure Function) and render Bot Framework WebChat; set
-`config.directLineTokenEndpoint`.
+Publish the agent to a custom website / Direct Line channel. Either embed its iframe in the slot, or
+call `copilotToken()` (which hits the agent API's `POST /copilot/token`) and render Bot Framework
+WebChat with the returned token.
 
 ### Hiding the placeholders
 
