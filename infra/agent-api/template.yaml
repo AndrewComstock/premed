@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Halcyra agent API. A small HTTPS backend the static site calls to reach AI agents:
+  POST /chat proxies to Amazon Bedrock Agents, and POST /copilot/token issues a
+  Microsoft Copilot Studio Direct Line token. Nothing here runs until agents are configured.
+
+Parameters:
+  AllowedOrigin:
+    Type: String
+    Default: "*"
+    Description: Site origin allowed by CORS, e.g. https://main.d123abc.amplifyapp.com
+  BedrockAgentMap:
+    Type: String
+    Default: "{}"
+    Description: >
+      JSON mapping site agent ids (src/agents/registry.ts) to Bedrock agents, e.g.
+      {"halcyra-assistant":{"agentId":"ABCD1234","aliasId":"TSTALIASID"}}
+  CopilotDirectLineSecretArn:
+    Type: String
+    Default: ""
+    Description: Optional Secrets Manager ARN holding a Copilot Studio Direct Line secret.
+
+Conditions:
+  HasCopilotSecret: !Not [!Equals [!Ref CopilotDirectLineSecretArn, ""]]
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures: [arm64]
+    Timeout: 60
+    MemorySize: 256
+    Environment:
+      Variables:
+        ALLOWED_ORIGIN: !Ref AllowedOrigin
+
+Resources:
+  AgentHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: [!Ref AllowedOrigin]
+        AllowMethods: [POST, OPTIONS]
+        AllowHeaders: [content-type]
+
+  BedrockChatFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: bedrock-chat.handler
+      Environment:
+        Variables:
+          BEDROCK_AGENT_MAP: !Ref BedrockAgentMap
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: bedrock:InvokeAgent
+              Resource: !Sub arn:${AWS::Partition}:bedrock:${AWS::Region}:${AWS::AccountId}:agent-alias/*
+      Events:
+        Chat:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AgentHttpApi
+            Path: /chat
+            Method: POST
+
+  CopilotTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: copilot-token.handler
+      Environment:
+        Variables:
+          DIRECT_LINE_SECRET_ARN: !Ref CopilotDirectLineSecretArn
+      Policies:
+        - !If
+          - HasCopilotSecret
+          - Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref CopilotDirectLineSecretArn
+          - !Ref AWS::NoValue
+      Events:
+        Token:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AgentHttpApi
+            Path: /copilot/token
+            Method: POST
+
+Outputs:
+  AgentApiUrl:
+    Description: Set this as NEXT_PUBLIC_AGENT_API_URL in the Amplify app's environment variables.
+    Value: !Sub https://${AgentHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}
