@@ -1,77 +1,68 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getAccount, type CustomerAccount, type PortalUser } from "@/lib/portal";
+import type { PortalSession } from "@/lib/portal";
+import { portalAuth, PortalApiError } from "@/lib/portalAuth";
 
-// Mock sign-in for the static demo. The session is just the chosen demo user's id,
-// kept in localStorage. Swap this for Cognito, Entra ID or another IdP when the
-// portal gets a real backend.
-
-const STORAGE_KEY = "halcyra-portal-session";
-
-interface StoredSession {
-  accountId: string;
-  userId: string;
-}
-
-export interface PortalSession {
-  account: CustomerAccount;
-  user: PortalUser;
-}
+// Holds the signed-in user's portal data for every /portal page. Sign-in itself is
+// done by the provider in src/lib/portalAuth.ts against the portal API.
 
 interface PortalContextValue {
-  /** False until localStorage has been read on the client. */
+  /** False until the stored session has been checked with the API. */
   ready: boolean;
   session: PortalSession | null;
-  signIn: (accountId: string, userId: string) => void;
-  signOut: () => void;
+  /** Set when the API can't be reached or isn't configured. */
+  error: string | null;
+  /** Returns an error message, or null on success. */
+  signIn: (email: string, password: string) => Promise<string | null>;
+  signOut: () => Promise<void>;
 }
 
 const PortalContext = createContext<PortalContextValue | null>(null);
 
-function resolve(stored: StoredSession | null): PortalSession | null {
-  if (!stored) return null;
-  const account = getAccount(stored.accountId);
-  const user = account?.users.find((u) => u.id === stored.userId);
-  return account && user ? { account, user } : null;
-}
-
-function readStored(): StoredSession | null {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as StoredSession) : null;
-  } catch {
-    return null;
-  }
-}
-
 export function PortalProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<PortalSession | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setSession(await portalAuth.load());
+      setError(null);
+    } catch (e) {
+      setSession(null);
+      setError(e instanceof PortalApiError ? e.message : "The portal is unavailable right now.");
+    } finally {
+      setReady(true);
+    }
+  }, []);
 
   useEffect(() => {
-    setSession(resolve(readStored()));
-    setReady(true);
-  }, []);
+    load();
+  }, [load]);
 
-  const signIn = useCallback((accountId: string, userId: string) => {
-    const stored = { accountId, userId };
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-    } catch {
-      // Private browsing: the session still lasts for this page view.
-    }
-    setSession(resolve(stored));
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const err = await portalAuth.signIn(email, password);
+        if (err) return err;
+      } catch (e) {
+        return e instanceof PortalApiError ? e.message : "Sign-in failed. Please try again.";
+      }
+      await load();
+      return null;
+    },
+    [load],
+  );
 
-  const signOut = useCallback(() => {
-    try {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } catch {}
+  const signOut = useCallback(async () => {
+    await portalAuth.signOut();
     setSession(null);
   }, []);
 
-  return <PortalContext.Provider value={{ ready, session, signIn, signOut }}>{children}</PortalContext.Provider>;
+  return (
+    <PortalContext.Provider value={{ ready, session, error, signIn, signOut }}>{children}</PortalContext.Provider>
+  );
 }
 
 export function usePortal(): PortalContextValue {

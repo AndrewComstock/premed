@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useSession } from "@/components/portal/PortalSession";
 import { Badge, PageTitle } from "@/components/portal/ui";
-import { formatDate, promotionsFor, type Promotion } from "@/lib/portal";
+import { formatDate, type Promotion } from "@/lib/portal";
 import { getProduct, sectorLabels } from "@/lib/products";
 
 export function PromotionsView() {
-  const { account } = useSession();
-  const promos = promotionsFor(account);
+  const { account, promotions: promos } = useSession();
   const contract = promos.filter((p) => p.accountId);
   const offers = promos.filter((p) => !p.accountId);
   const owned = new Set(account.instruments.map((i) => i.productSlug));

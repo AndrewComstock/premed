@@ -67,8 +67,8 @@ function Gate({ children }: { children: React.ReactNode }) {
               <p className="text-white/70">{roleLabels[user.role]}</p>
             </div>
             <button
-              onClick={() => {
-                signOut();
+              onClick={async () => {
+                await signOut();
                 router.replace("/portal/login/");
               }}
               className="btn btn-outline !py-2 text-sm"

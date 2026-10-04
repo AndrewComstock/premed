@@ -3,17 +3,16 @@
 import Link from "next/link";
 import { useSession } from "@/components/portal/PortalSession";
 import { Badge, Panel, Stat } from "@/components/portal/ui";
-import { formatDate, formatMoney, isLowStock, orderTotal, promotionsFor } from "@/lib/portal";
+import { formatDate, formatMoney, isLowStock, orderTotal } from "@/lib/portal";
 import { getProduct } from "@/lib/products";
 
 export function OverviewView() {
-  const { account, user } = useSession();
+  const { account, user, promotions: promos } = useSession();
   const openOrders = account.orders.filter((o) => o.status !== "Delivered");
   const activeShipments = account.shipments.filter((s) => s.status !== "Delivered");
   const delayed = activeShipments.filter((s) => s.status === "Delayed").length;
   const lowStock = account.consumables.filter(isLowStock);
   const attention = account.instruments.filter((i) => i.status !== "Operational");
-  const promos = promotionsFor(account);
   const firstName = user.name.replace(/^(Dr\.|Nurse)\s+/, "").split(" ")[0];
 
   return (

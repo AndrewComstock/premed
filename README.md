@@ -11,15 +11,17 @@ Everything here (company, people, products, specifications, news) is invented.
 - Home, Products (filterable catalog), 23 product detail pages, Solutions by sector, Innovation,
   Service & Support, About, News and Contact.
 - Invented catalog across 8 categories in `src/lib/products.ts`.
-- A demo customer portal at `/portal` (mock sign-in, orders, inventory, deliveries, promotions and a
-  placeholder for clinician product Q&A) for a hospital, a university and a government lab. Demo
-  users and the password are shown on `/portal/login`; data lives in `src/lib/portal.ts`.
+- A customer portal at `/portal` (sign-in, orders, inventory, deliveries, promotions and a
+  placeholder for clinician product Q&A) for a hospital, a university and a government lab. Sign-in
+  and data are served from AWS (DynamoDB behind the agent API); setup in
+  [docs/DEPLOY.md](docs/DEPLOY.md#4-customer-portal).
 - Clearly marked agent slots on every key page, plus a floating "Ask Halcyra" launcher.
   See [docs/AGENTS.md](docs/AGENTS.md).
 
 ## Stack
 
-Next.js (App Router, static export) · React · Tailwind CSS v4 · TypeScript. No backend.
+Next.js (App Router, static export) · React · Tailwind CSS v4 · TypeScript. The only backend is the
+agent API in `infra/agent-api` (API Gateway + Lambda + DynamoDB), used by agents and the customer portal.
 
 ## Run it
 

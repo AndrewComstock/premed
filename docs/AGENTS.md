@@ -22,9 +22,11 @@ and `installedProducts` (catalog slugs of the instruments on the signed-in accou
 ## Customer portal
 
 `/portal` is a demo customer portal (orders, inventory, deliveries, promotions) for three invented
-institutions: a hospital, a university and a government lab. Sign-in is a client-side mock with demo
-users listed on `/portal/login`; all sample data lives in `src/lib/portal.ts`, with instruments keyed
-to catalog slugs so an agent can join account data with `src/lib/products.ts`. The clinician product
+institutions: a hospital, a university and a government lab. Sign-in is real: the portal API in
+`infra/agent-api` checks the email and password against a DynamoDB users table and returns only the
+signed-in account's data (see [DEPLOY.md](DEPLOY.md#4-customer-portal)). The seed data is
+`infra/agent-api/seed/portal-seed.json`, with instruments keyed to catalog slugs so an agent can join
+account data with `src/lib/products.ts`. The clinician product
 Q&A feature at `/portal/ask` is intentionally unimplemented: it is the `clinical-product-qa` slot.
 
 ## Files
