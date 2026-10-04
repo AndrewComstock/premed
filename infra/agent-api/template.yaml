@@ -4,12 +4,16 @@ Description: >
   Halcyra agent API. A small HTTPS backend the static site calls to reach AI agents:
   POST /chat proxies to Amazon Bedrock Agents, and POST /copilot/token issues a
   Microsoft Copilot Studio Direct Line token. Nothing here runs until agents are configured.
+  It also serves the customer portal (/portal/*): sign-in against a DynamoDB users table
+  and the portal data for the signed-in account.
 
 Parameters:
   AllowedOrigin:
     Type: String
     Default: "*"
-    Description: Site origin allowed by CORS, e.g. https://main.d123abc.amplifyapp.com
+    Description: >
+      Comma-separated site origins allowed by CORS, e.g.
+      https://main.d123abc.amplifyapp.com,http://localhost:3000
   BedrockAgentMap:
     Type: String
     Default: "{}"
@@ -39,9 +43,9 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
-        AllowOrigins: [!Ref AllowedOrigin]
-        AllowMethods: [POST, OPTIONS]
-        AllowHeaders: [content-type]
+        AllowOrigins: !Split [",", !Ref AllowedOrigin]
+        AllowMethods: [GET, POST, OPTIONS]
+        AllowHeaders: [content-type, authorization]
 
   BedrockChatFunction:
     Type: AWS::Serverless::Function
@@ -88,7 +92,78 @@ Resources:
             Path: /copilot/token
             Method: POST
 
+  # Customer portal. Tables are retained if the stack is deleted, so demo data and
+  # users survive a teardown; delete them by hand if you really want them gone.
+  PortalUsersTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: halcyra-portal-users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: email, AttributeType: S }
+      KeySchema:
+        - { AttributeName: email, KeyType: HASH }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+
+  PortalSessionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: halcyra-portal-sessions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: tokenHash, AttributeType: S }
+      KeySchema:
+        - { AttributeName: tokenHash, KeyType: HASH }
+      TimeToLiveSpecification: { AttributeName: expiresAt, Enabled: true }
+
+  PortalDataTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: halcyra-portal-data
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+
+  PortalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: portal.handler
+      Timeout: 10
+      Environment:
+        Variables:
+          PORTAL_USERS_TABLE: !Ref PortalUsersTable
+          PORTAL_SESSIONS_TABLE: !Ref PortalSessionsTable
+          PORTAL_DATA_TABLE: !Ref PortalDataTable
+      Policies:
+        - DynamoDBReadPolicy: { TableName: !Ref PortalUsersTable }
+        - DynamoDBReadPolicy: { TableName: !Ref PortalDataTable }
+        - DynamoDBCrudPolicy: { TableName: !Ref PortalSessionsTable }
+      Events:
+        Login:
+          Type: HttpApi
+          Properties: { ApiId: !Ref AgentHttpApi, Path: /portal/login, Method: POST }
+        Logout:
+          Type: HttpApi
+          Properties: { ApiId: !Ref AgentHttpApi, Path: /portal/logout, Method: POST }
+        Me:
+          Type: HttpApi
+          Properties: { ApiId: !Ref AgentHttpApi, Path: /portal/me, Method: GET }
+
 Outputs:
   AgentApiUrl:
     Description: Set this as NEXT_PUBLIC_AGENT_API_URL in the Amplify app's environment variables.
     Value: !Sub https://${AgentHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}
+  PortalUsersTableName:
+    Value: !Ref PortalUsersTable
+  PortalDataTableName:
+    Value: !Ref PortalDataTable

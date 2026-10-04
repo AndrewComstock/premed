@@ -8,7 +8,8 @@ export type AgentPlacement =
   | "product-advisor" // Q&A about a single product on /products/[slug]
   | "quote-request" // procurement / RFQ helper on /contact and product pages
   | "sector-advisor" // sector-specific guidance on /solutions
-  | "support"; // service & support assistant on /support
+  | "support" // service & support assistant on /support
+  | "clinical-product-qa"; // product Q&A for clinicians in the customer portal (/portal/ask)
 
 export type AgentProvider = "bedrock" | "copilot-studio" | "custom";
 
@@ -29,6 +30,10 @@ export interface AgentContext {
   page: string;
   productSlug?: string;
   sector?: string;
+  /** Customer portal only: the signed-in account and user, and the instruments they own. */
+  accountId?: string;
+  userRole?: string;
+  installedProducts?: string[];
 }
 
 export interface AgentMessage {

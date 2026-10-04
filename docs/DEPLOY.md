@@ -5,7 +5,8 @@ Browser ──► AWS Amplify Hosting (static site from this repo, auto-deploys 
    │
    └──► Agent API: API Gateway HTTP API + Lambda   (infra/agent-api, AWS SAM)
             ├─ POST /chat           ──► Amazon Bedrock Agents
-            └─ POST /copilot/token  ──► Microsoft Copilot Studio (Direct Line token)
+            ├─ POST /copilot/token  ──► Microsoft Copilot Studio (Direct Line token)
+            └─ /portal/*            ──► DynamoDB (portal users, sessions, account data)
 ```
 
 **Why AWS:** Bedrock agents run there, so the site, its agent backend and the agents share one
@@ -56,6 +57,32 @@ every route returns 503 "not configured" until agents are mapped.
 3. Amplify rebuilds; the slot for that agent now talks to it.
 
 Other useful variables: `NEXT_PUBLIC_SHOW_AGENT_SLOTS=false` hides the "coming soon" placeholders.
+
+## 4. Customer portal
+
+The portal's sign-in and data come from the agent API and three DynamoDB tables it creates:
+
+| Table                     | Key         | Holds                                                         |
+| ------------------------- | ----------- | ------------------------------------------------------------- |
+| `halcyra-portal-users`    | `email`     | Profile, account id and a scrypt password hash (never plain)  |
+| `halcyra-portal-sessions` | `tokenHash` | SHA-256 of each session token, expired after 8 hours by TTL   |
+| `halcyra-portal-data`     | `pk` + `sk` | One partition per account (`ACCOUNT#<id>`) plus `PROMOTIONS`  |
+
+1. Deploy the agent API (section 2), allowing the site's origin and local development:
+   `AllowedOrigin=https://main.<app-id>.amplifyapp.com,http://localhost:3000`.
+2. Load the demo data and set the demo users' password:
+   ```bash
+   cd infra/agent-api
+   npm install
+   PORTAL_DEMO_PASSWORD='<choose one>' npm run seed:portal
+   ```
+   Re-running replaces the demo data from `seed/portal-seed.json` and resets passwords.
+3. Build the site with `NEXT_PUBLIC_AGENT_API_URL` set to the `AgentApiUrl` output and redeploy.
+
+Demo users are the `email` values in `seed/portal-seed.json`. The users and data tables are kept if
+the stack is deleted. **Moving to Okta or Auth0:** add a provider next to `tableAuth` in
+`src/lib/portalAuth.ts` and make `authenticate()` in `infra/agent-api/src/portal-auth.mjs` verify the
+IdP's JWT; the rest of the portal is unchanged.
 
 ## Alternatives considered
 
