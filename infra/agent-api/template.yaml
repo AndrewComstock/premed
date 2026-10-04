@@ -9,7 +9,7 @@ Description: >
 
 Parameters:
   AllowedOrigin:
-    Type: String
+    Type: CommaDelimitedList
     Default: "*"
     Description: >
       Comma-separated site origins allowed by CORS, e.g.
@@ -36,14 +36,16 @@ Globals:
     MemorySize: 256
     Environment:
       Variables:
-        ALLOWED_ORIGIN: !Ref AllowedOrigin
+        ALLOWED_ORIGIN: !Join [",", !Ref AllowedOrigin]
 
 Resources:
   AgentHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
-        AllowOrigins: !Split [",", !Ref AllowedOrigin]
+        # A list parameter, not !Split: SAM mistranslates an intrinsic here and
+        # silently drops the whole CORS config.
+        AllowOrigins: !Ref AllowedOrigin
         AllowMethods: [GET, POST, OPTIONS]
         AllowHeaders: [content-type, authorization]
 
