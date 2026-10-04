@@ -17,9 +17,19 @@ export function OverviewView() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-extrabold">Welcome back, {firstName}</h2>
-        <p className="mt-2 text-ink-soft">Here is what needs attention across {account.shortName} today.</p>
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="text-3xl font-extrabold">Welcome back, {firstName}</h2>
+          <p className="mt-2 text-ink-soft">Here is what needs attention across {account.shortName} today.</p>
+        </div>
+
+        <div className="rounded-2xl bg-ink p-6 text-white lg:w-80 lg:shrink-0">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-teal">Your account manager</p>
+          <p className="mt-2 text-lg font-bold">{account.accountManager.name}</p>
+          <p className="mt-1 text-sm text-white/70">{account.accountManager.email}</p>
+          <p className="text-sm text-white/70">{account.accountManager.phone}</p>
+          <p className="mt-4 text-xs text-white/60">{account.contract}</p>
+        </div>
       </div>
 
       {user.role === "clinician" && (
@@ -145,13 +155,6 @@ export function OverviewView() {
             </ul>
           </Panel>
 
-          <div className="rounded-2xl bg-ink p-6 text-white">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-teal">Your account manager</p>
-            <p className="mt-2 text-lg font-bold">{account.accountManager.name}</p>
-            <p className="mt-1 text-sm text-white/70">{account.accountManager.email}</p>
-            <p className="text-sm text-white/70">{account.accountManager.phone}</p>
-            <p className="mt-4 text-xs text-white/60">{account.contract}</p>
-          </div>
         </div>
       </div>
     </div>
