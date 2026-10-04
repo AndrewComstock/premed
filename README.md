@@ -11,6 +11,9 @@ Everything here (company, people, products, specifications, news) is invented.
 - Home, Products (filterable catalog), 23 product detail pages, Solutions by sector, Innovation,
   Service & Support, About, News and Contact.
 - Invented catalog across 8 categories in `src/lib/products.ts`.
+- A demo customer portal at `/portal` (mock sign-in, orders, inventory, deliveries, promotions and a
+  placeholder for clinician product Q&A) for a hospital, a university and a government lab. Demo
+  users and the password are shown on `/portal/login`; data lives in `src/lib/portal.ts`.
 - Clearly marked agent slots on every key page, plus a floating "Ask Halcyra" launcher.
   See [docs/AGENTS.md](docs/AGENTS.md).
 

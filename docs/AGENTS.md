@@ -13,9 +13,19 @@ that says which agent goes where, and stub provider adapters for AWS Bedrock and
 | `quote-request`    | Product page sidebar, `/contact` sidebar           | Procurement Copilot (Copilot Studio)|
 | `sector-advisor`   | Each sector section on `/solutions`                | Procurement Copilot (Copilot Studio)|
 | `support`          | Top of `/support`                                  | Service Agent (custom)              |
+| `clinical-product-qa` | Customer portal, `/portal/ask`                  | Clinical Product Q&A (Bedrock)      |
 
 Every slot renders an element with `data-agent-slot="<placement>"`, plus the page context
-(`page`, `productSlug`, `sector`) the agent should receive.
+(`page`, `productSlug`, `sector`) the agent should receive. Portal slots also pass `accountId`, `userRole`
+and `installedProducts` (catalog slugs of the instruments on the signed-in account).
+
+## Customer portal
+
+`/portal` is a demo customer portal (orders, inventory, deliveries, promotions) for three invented
+institutions: a hospital, a university and a government lab. Sign-in is a client-side mock with demo
+users listed on `/portal/login`; all sample data lives in `src/lib/portal.ts`, with instruments keyed
+to catalog slugs so an agent can join account data with `src/lib/products.ts`. The clinician product
+Q&A feature at `/portal/ask` is intentionally unimplemented: it is the `clinical-product-qa` slot.
 
 ## Files
 

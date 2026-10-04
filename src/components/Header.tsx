@@ -24,6 +24,7 @@ export function Header() {
         <div className="container-page flex h-9 items-center justify-between">
           <span className="truncate">Serving research, public health and clinical laboratories in 60+ countries</span>
           <div className="hidden gap-5 sm:flex">
+            <Link href="/portal/" className="font-semibold text-teal hover:text-white">Customer portal</Link>
             <Link href="/about/#investors" className="hover:text-white">Investors</Link>
             <Link href="/about/#careers" className="hover:text-white">Careers</Link>
             <Link href="/contact/" className="hover:text-white">Contact</Link>
@@ -78,6 +79,11 @@ export function Header() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href="/portal/" onClick={() => setOpen(false)} className="block py-3 text-lg font-medium text-plum">
+                Customer portal
+              </Link>
+            </li>
             <li className="pt-2 pb-3">
               <Link href="/contact/?topic=quote" onClick={() => setOpen(false)} className="btn btn-primary">
                 Request a quote

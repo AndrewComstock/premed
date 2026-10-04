@@ -10,7 +10,7 @@ export const agents: AgentDefinition[] = [
     provider: "bedrock",
     placements: ["global-assistant"],
     enabled: false,
-      },
+  },
   {
     id: "product-finder",
     name: "Product Finder",
@@ -33,6 +33,15 @@ export const agents: AgentDefinition[] = [
     description: "Troubleshooting, service scheduling and warranty questions.",
     provider: "custom",
     placements: ["support"],
+    enabled: false,
+  },
+  {
+    id: "clinical-product-qa",
+    name: "Clinical Product Q&A",
+    description:
+      "Answers doctors' and nurses' questions about the instruments and assays their institution owns, from IFUs, specs and service records.",
+    provider: "bedrock",
+    placements: ["clinical-product-qa"],
     enabled: false,
   },
 ];
