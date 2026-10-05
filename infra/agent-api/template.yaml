@@ -148,7 +148,7 @@ Resources:
           PORTAL_DATA_TABLE: !Ref PortalDataTable
       Policies:
         - DynamoDBReadPolicy: { TableName: !Ref PortalUsersTable }
-        - DynamoDBReadPolicy: { TableName: !Ref PortalDataTable }
+        - DynamoDBCrudPolicy: { TableName: !Ref PortalDataTable }
         - DynamoDBCrudPolicy: { TableName: !Ref PortalSessionsTable }
       Events:
         Login:
@@ -160,6 +160,12 @@ Resources:
         Me:
           Type: HttpApi
           Properties: { ApiId: !Ref AgentHttpApi, Path: /portal/me, Method: GET }
+        ActivateIQ:
+          Type: HttpApi
+          Properties: { ApiId: !Ref AgentHttpApi, Path: /portal/iq/activate, Method: POST }
+        DeactivateIQ:
+          Type: HttpApi
+          Properties: { ApiId: !Ref AgentHttpApi, Path: /portal/iq/deactivate, Method: POST }
 
 Outputs:
   AgentApiUrl:

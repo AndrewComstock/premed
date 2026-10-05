@@ -56,7 +56,8 @@ for (const account of seed.accounts) {
 }
 seed.promotions.forEach((p, i) => dataItems.push({ pk: "PROMOTIONS", sk: `PROMO#${p.id}`, type: "promotion", seq: i, ...p }));
 
-// Remove items that are no longer in the seed file.
+// Remove items that are no longer in the seed file. Settings customers change in the
+// portal (HalcyraIQ activation at sk "IQ") are not seed data, so they are kept.
 const keep = new Set(dataItems.map((i) => `${i.pk}|${i.sk}`));
 const stale = [];
 for (const pk of new Set(dataItems.map((i) => i.pk))) {
@@ -71,7 +72,7 @@ for (const pk of new Set(dataItems.map((i) => i.pk))) {
         ExclusiveStartKey,
       }),
     );
-    for (const it of res.Items ?? []) if (!keep.has(`${it.pk}|${it.sk}`)) stale.push(it);
+    for (const it of res.Items ?? []) if (it.sk !== "IQ" && !keep.has(`${it.pk}|${it.sk}`)) stale.push(it);
     ExclusiveStartKey = res.LastEvaluatedKey;
   } while (ExclusiveStartKey);
 }

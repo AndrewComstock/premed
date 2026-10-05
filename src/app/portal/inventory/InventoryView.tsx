@@ -62,8 +62,8 @@ export function InventoryView() {
                     <Link href="/contact/?topic=service" className="link-arrow">
                       Request service <span aria-hidden>→</span>
                     </Link>
-                    <Link href="/portal/ask/" className="font-semibold text-ink-soft hover:text-plum">
-                      Ask a question
+                    <Link href="/portal/iq/" className="font-semibold text-ink-soft hover:text-plum">
+                      Ask HalcyraIQ
                     </Link>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 import { agentApiUrl } from "@/agents/registry";
-import type { PortalSession } from "./portal";
+import type { HalcyraIQActivation, PortalSession } from "./portal";
 
 // Customer portal sign-in, talking to the portal API in infra/agent-api
 // (POST /portal/login, POST /portal/logout, GET /portal/me), which checks
@@ -87,3 +87,11 @@ export const tableAuth: PortalAuthProvider = {
 };
 
 export const portalAuth: PortalAuthProvider = tableAuth;
+
+/** Turns HalcyraIQ on or off for the signed-in user's account (account admins only). */
+export async function setHalcyraIQ(on: boolean): Promise<HalcyraIQActivation | null> {
+  const res = await call(`/portal/iq/${on ? "activate" : "deactivate"}`, { method: "POST" }, readToken());
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new PortalApiError(data.error || "Couldn't update HalcyraIQ. Please try again.");
+  return data.halcyraIQ ?? null;
+}

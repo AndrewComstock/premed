@@ -9,7 +9,7 @@ export type AgentPlacement =
   | "quote-request" // procurement / RFQ helper on /contact and product pages
   | "sector-advisor" // sector-specific guidance on /solutions
   | "support" // service & support assistant on /support
-  | "clinical-product-qa"; // product Q&A for clinicians in the customer portal (/portal/ask)
+  | "clinical-product-qa"; // product Q&A for clinicians in the customer portal (/portal/iq)
 
 export type AgentProvider = "bedrock" | "copilot-studio" | "custom";
 
