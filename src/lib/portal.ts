@@ -103,6 +103,14 @@ export interface PortalSession {
   account: CustomerAccount;
   /** Promotions this account is eligible for, including its contract pricing. */
   promotions: Promotion[];
+  /** Set once an account admin has activated HalcyraIQ for the institution. */
+  halcyraIQ: HalcyraIQActivation | null;
+}
+
+export interface HalcyraIQActivation {
+  activatedAt: string;
+  /** Name of the admin who activated it. */
+  activatedBy: string;
 }
 
 export interface CustomerAccount {

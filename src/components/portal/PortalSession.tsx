@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { PortalSession } from "@/lib/portal";
-import { portalAuth, PortalApiError } from "@/lib/portalAuth";
+import { portalAuth, PortalApiError, setHalcyraIQ } from "@/lib/portalAuth";
 
 // Holds the signed-in user's portal data for every /portal page. Sign-in itself is
 // done by the provider in src/lib/portalAuth.ts against the portal API.
@@ -16,6 +16,8 @@ interface PortalContextValue {
   /** Returns an error message, or null on success. */
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
+  /** Activates or deactivates HalcyraIQ for the account. Returns an error message, or null on success. */
+  setIQ: (on: boolean) => Promise<string | null>;
 }
 
 const PortalContext = createContext<PortalContextValue | null>(null);
@@ -60,8 +62,18 @@ export function PortalProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
   }, []);
 
+  const setIQ = useCallback(async (on: boolean) => {
+    try {
+      const halcyraIQ = await setHalcyraIQ(on);
+      setSession((s) => (s ? { ...s, halcyraIQ } : s));
+      return null;
+    } catch (e) {
+      return e instanceof PortalApiError ? e.message : "Couldn't update HalcyraIQ. Please try again.";
+    }
+  }, []);
+
   return (
-    <PortalContext.Provider value={{ ready, session, error, signIn, signOut }}>{children}</PortalContext.Provider>
+    <PortalContext.Provider value={{ ready, session, error, signIn, signOut, setIQ }}>{children}</PortalContext.Provider>
   );
 }
 

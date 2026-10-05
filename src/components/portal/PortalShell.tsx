@@ -13,7 +13,7 @@ const portalNav = [
   { href: "/portal/inventory/", label: "Inventory" },
   { href: "/portal/deliveries/", label: "Deliveries" },
   { href: "/portal/promotions/", label: "Promotions" },
-  { href: "/portal/ask/", label: "Ask about products" },
+  { href: "/portal/iq/", label: "HalcyraIQ" },
 ];
 
 export function PortalShell({ children }: { children: React.ReactNode }) {

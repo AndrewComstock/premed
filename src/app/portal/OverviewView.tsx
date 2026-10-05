@@ -34,12 +34,12 @@ export function OverviewView() {
 
       {user.role === "clinician" && (
         <Link
-          href="/portal/ask/"
+          href="/portal/iq/"
           className="flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-r from-plum to-teal-dark p-6 text-white"
         >
           <div>
             <p className="font-bold">Have a question about an instrument or assay?</p>
-            <p className="mt-1 text-sm text-white/80">Clinical Product Q&amp;A is coming to the portal for doctors and nurses.</p>
+            <p className="mt-1 text-sm text-white/80">Ask HalcyraIQ in Slack, Teams or right here in the portal.</p>
           </div>
           <span aria-hidden className="text-2xl">→</span>
         </Link>
